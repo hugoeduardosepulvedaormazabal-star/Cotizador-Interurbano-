@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizador de Fletes Interurbano - Limatco S.A</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Código de mapas gratuito (Leaflet) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="app-container">
+        <header class="app-header">
+            <h1>Cotizador de Fletes Interurbano <br><span>Limatco S.A</span></h1>
+            <p>Calcula el costo de tu envío rápidamente.</p>
+        </header>
+
+        <div class="layout-grid">
+            <div class="left-panel">
+                <section class="form-section">
+                    <!-- El id "freight-form" es la llave para que JavaScript se conecte con este formulario -->
+                    <form id="freight-form">
+                        <div class="input-group">
+                            <label for="origin">📍 Bodega de Origen</label>
+                            <select id="origin" required>
+                                <option value="SUCURSAL_INDEPENDENCIA">Independencia (Agustín López de Alcázar 546)</option>
+                                <option value="SUCURSAL_VESPUCIO">Vespucio (Av. Américo Vespucio 4288, Peñalolén)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="destination">🏁 Dirección de Destino</label>
+                            <input type="text" id="destination" placeholder="Ej: Barcelona, Puerto" required>
+                        </div>
+
+                        <!-- Esta es la casilla de rescate. Comienza oculta -->
+                        <div class="input-group" id="emergency-box" style="display: none; background: rgba(239, 68, 68, 0.2); padding: 15px; border-radius: 12px; border: 1px solid #ef4444; flex-direction: column;">
+                            <label for="emergency-distance" style="color: #fca5a5; font-size: 13px; font-weight: bold; margin-bottom: 5px;">⚠️ Modo Rescate: Kilómetros Extras</label>
+                            <p style="font-size: 12px; color: #f8fafc; margin-bottom: 10px;">El satélite falló. Por favor investiga la distancia y pásala a manual aquí (para poder facturarle al cliente):</p>
+                            
+                            <button type="button" id="emergency-gmaps-btn" class="btn-primary" style="background-color: #4285F4; padding: 10px; font-size: 14px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 6px;">
+                                🗺️ Ver ruta en Google Maps
+                            </button>
+
+                            <input type="number" id="emergency-distance" placeholder="Ej: 45" min="1" step="0.1" style="border-color: #ef4444; width: 100%;">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="distance">📏 Distancia (Se completará de forma automática)</label>
+                            <input type="text" id="distance" placeholder="Esperando..." readonly>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="weight">⚖️ Peso de la carga (Kg)</label>
+                            <input type="number" id="weight" placeholder="Ej: 1500" min="1" required>
+                        </div>
+
+                        <button type="submit" class="btn-primary">
+                            Calcular Flete
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Esta sección comienza oculta (display: none) y JavaScript la mostrará luego -->
+                <section class="result-section" id="result-section" style="display: none; margin-top: 24px;">
+                    <div class="result-card">
+                        <h2>Resumen de Cotización</h2>
+                        
+                        <div class="result-item">
+                            <span class="label">Ruta Estimada:</span>
+                            <span class="value" id="route-display">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Distancia Total:</span>
+                            <span class="value highlight" id="distance-display">0 km</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Peso Declarado:</span>
+                            <span class="value" id="weight-display">0 kg</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Tarifa Aplicada por Km:</span>
+                            <span class="value" id="rate-display">$0</span>
+                        </div>
+                        
+                        <div class="divider"></div>
+                        
+                        <div class="result-item total">
+                            <span class="label">Costo Total:</span>
+                            <span class="value" id="total-cost">$0.00</span>
+                        </div>
+
+                        <!-- NUEVOS: Botones de Acción -->
+                        <div style="display: flex; gap: 10px; margin-top: 25px; flex-wrap: wrap;">
+                            <button type="button" id="print-btn" class="btn-primary" style="flex: 1; min-width: 140px; background-color: var(--highlight); display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px;">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                Imprimir
+                            </button>
+                            <button type="button" id="gmaps-btn" class="btn-primary" style="flex: 1; min-width: 140px; background-color: #4285F4; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px;">
+                                🗺️ Abrir en GMaps
+                            </button>
+                            <button type="button" id="toggle-map-btn" class="btn-primary" style="flex: 1; min-width: 140px; background-color: #475569; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px;">
+                                👁️ Esconder Mapa
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="right-panel">
+                <!-- EL NUEVO MAPA VISUAL PARA EL CLIENTE AHORA DEL LADO DERECHO -->
+                <div id="map-container" style="position: relative; height: 100%; min-height: 400px; border-radius: 16px; overflow: hidden; display: none; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%;">
+                    <button id="fullscreen-btn" type="button" style="position: absolute; bottom: 10px; right: 10px; z-index: 1000; background: var(--accent-color); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.2s;">🔍 Pantalla Completa</button>
+                    <button id="close-fullscreen-btn" type="button" style="display: none; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 999999; background: #ef4444; color: white; border: 2px solid white; padding: 15px 30px; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: bold; box-shadow: 0 8px 15px rgba(0,0,0,0.6);">❌ CERRAR MAPA EXPANDIDO</button>
+                    <div id="map" style="height: 100%; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Enlazamos nuestro archivo de lógica -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="app.js"></script>
+</body>
+</html>
