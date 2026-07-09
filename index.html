@@ -3,100 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Fletes</title>
+    <title>Cotizador de Fletes Interurbano - Limatco S.A</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Código de mapas gratuito (Leaflet) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
-    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Scripts de Google Maps para el Autocomplete -->
+    <script>
+        const GOOGLE_MAPS_KEY = "TU_API_KEY_AQUI"; // <--- REEMPLAZA ESTO CON TU CLAVE DE GOOGLE MAPS
+        
+        if (GOOGLE_MAPS_KEY && GOOGLE_MAPS_KEY !== "TU_API_KEY_AQUI") {
+            (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+                key: GOOGLE_MAPS_KEY,
+                v: "weekly",
+                language: "es",
+                region: "CL"
+            });
+        } else {
+            console.log("Clave de Google Maps por defecto detectada. El cargador de Google Maps no se iniciará para evitar bloquear el campo. Se usará el buscador alternativo Nominatim (OpenStreetMap) de forma automática.");
+        }
+    </script>
+
+    <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
     <main class="app-container">
         <header class="app-header">
-            <h1>Cotizador de <span>Fletes</span></h1>
+            <h1>Cotizador de Fletes Interurbano <br><span>Limatco S.A</span></h1>
             <p>Calcula el costo de tu envío rápidamente.</p>
         </header>
 
-        <section class="form-section">
-            <!-- El id "freight-form" es la llave para que JavaScript se conecte con este formulario -->
-            <form id="freight-form">
-                <div class="input-group">
-                    <label for="origin">📍 Bodega de Origen</label>
-                    <select id="origin" required>
-                        <option value="SUCURSAL_INDEPENDENCIA">Independencia (Agustín López de Alcázar 546)</option>
-                        <option value="SUCURSAL_VESPUCIO">Vespucio (Av. Américo Vespucio 4288, Peñalolén)</option>
-                    </select>
-                </div>
-                
-                <div class="input-group">
-                    <label for="destination">🏁 Dirección de Destino</label>
-                    <input type="text" id="destination" placeholder="Ej: Barcelona, Puerto" required>
-                </div>
+        <div class="dashboard-grid">
+            <!-- Columna 1: Formulario de Datos -->
+            <div class="dashboard-col col-form">
+                <section class="form-section">
+                    <!-- El id "freight-form" es la llave para que JavaScript se conecte con este formulario -->
+                    <form id="freight-form">
+                        <div class="input-group">
+                            <label for="username">👤 Persona que Cotiza (Utilice su correo)</label>
+                            <input type="email" id="username" placeholder="ejemplo@limatco.cl" required>
+                        </div>
 
-                <!-- Esta es la casilla de rescate. Comienza oculta -->
-                <div class="input-group" id="emergency-box" style="display: none; background: rgba(239, 68, 68, 0.2); padding: 15px; border-radius: 12px; border: 1px solid #ef4444; flex-direction: column;">
-                    <label for="emergency-distance" style="color: #fca5a5; font-size: 13px; font-weight: bold; margin-bottom: 5px;">⚠️ Modo Rescate: Kilómetros Extras</label>
-                    <p style="font-size: 12px; color: #f8fafc; margin-bottom: 10px;">El satélite falló. Por favor investiga la distancia y pásala a manual aquí (para poder facturarle al cliente):</p>
-                    <input type="number" id="emergency-distance" placeholder="Ej: 45" min="1" step="0.1" style="border-color: #ef4444; width: 100%;">
-                </div>
+                        <div class="input-group">
+                            <label for="store">🏬 Tienda que Cotiza</label>
+                            <select id="store" required>
+                                <option value="" disabled selected>Selecciona una tienda...</option>
+                                <option value="Central Cotizaciones">Central Cotizaciones</option>
+                                <option value="L01 - Independencia">L01 - Independencia</option>
+                                <option value="L03 - Vespucio">L03 - Vespucio</option>
+                                <option value="L05 - Manquehue">L05 - Manquehue</option>
+                                <option value="L06 - San Miguel">L06 - San Miguel</option>
+                                <option value="L08 - San Bernardo">L08 - San Bernardo</option>
+                                <option value="L09 - Puente Alto">L09 - Puente Alto</option>
+                                <option value="L15 - Las Condes">L15 - Las Condes</option>
+                                <option value="L16 - Talagante">L16 - Talagante</option>
+                                <option value="L17 - Chicureo">L17 - Chicureo</option>
+                                <option value="L18 - Maipú">L18 - Maipú</option>
+                                <option value="L20 - Padre Hurtado">L20 - Padre Hurtado</option>
+                            </select>
+                        </div>
 
-                <div class="input-group">
-                    <label for="distance">📏 Distancia (Se completará de forma automática)</label>
-                    <input type="text" id="distance" placeholder="Esperando..." readonly>
-                </div>
+                        <div class="input-group">
+                            <label for="origin">📍 Bodega de Origen</label>
+                            <select id="origin" required>
+                                <option value="SUCURSAL_INDEPENDENCIA">Independencia (Agustín López de Alcázar 546)</option>
+                                <option value="SUCURSAL_VESPUCIO">Vespucio (Av. Américo Vespucio 4288, Peñalolén)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="destination">🏁 Dirección de Destino</label>
+                            <!-- Regresamos al input normal para que nunca se bloquee -->
+                            <input type="text" id="destination" placeholder="Ej: Viña del Mar, Valparaíso" required autocomplete="off">
+                        </div>
 
-                <div class="input-group">
-                    <label for="weight">⚖️ Peso de la carga (Kg)</label>
-                    <input type="number" id="weight" placeholder="Ej: 1500" min="1" required>
-                </div>
 
-                <button type="submit" class="btn-primary">
-                    Calcular Flete
-                </button>
-            </form>
-        </section>
 
-        <!-- Esta sección comienza oculta (display: none) y JavaScript la mostrará luego -->
-        <section class="result-section" id="result-section" style="display: none;">
-            
-            <!-- EL NUEVO MAPA VISUAL PARA EL CLIENTE -->
-            <div id="map-container" style="position: relative; height: 250px; margin-bottom: 20px; border-radius: 16px; overflow: hidden; display: none; border: 1px solid rgba(255, 255, 255, 0.1);">
-                <button id="fullscreen-btn" type="button" style="position: absolute; bottom: 10px; right: 10px; z-index: 1000; background: var(--accent-color); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.2s;">🔍 Pantalla Completa</button>
-                <button id="close-fullscreen-btn" type="button" style="display: none; position: absolute; top: 20px; right: 20px; z-index: 10000; background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.5);">❌ Cerrar Mapa</button>
-                <div id="map" style="height: 100%; width: 100%;"></div>
+                        <div class="input-group">
+                            <label for="distance">📏 Distancia (Se completará de forma automática)</label>
+                            <input type="text" id="distance" placeholder="Esperando..." readonly>
+                        </div>
+
+                        <!-- Override manual de kilómetros -->
+                        <div class="input-group manual-km-group">
+                            <div class="manual-km-toggle" id="manual-km-toggle-area">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="manual-km-toggle">
+                                    <span class="toggle-slider"></span>
+                                </div>
+                                <span class="toggle-label">✏️ Ingresar kilómetros manualmente</span>
+                            </div>
+                            <div id="manual-km-box" class="manual-km-input-box" style="display: none;">
+                                <p class="manual-km-hint">Si la distancia automática no coincide con la real, ingresa los km correctos aquí:</p>
+                                <div class="manual-km-row">
+                                    <input type="number" id="manual-km" placeholder="Ej: 120" min="1" step="0.1">
+                                    <span class="manual-km-unit">km</span>
+                                </div>
+                                <button type="button" id="manual-gmaps-btn" class="btn-secondary">
+                                    🗺️ Verificar distancia en Google Maps
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="weight">⚖️ Peso de la carga (Kg)</label>
+                            <input type="number" id="weight" placeholder="Ej: 1500" min="1" required>
+                        </div>
+
+                        <button type="submit" class="btn-primary">
+                            Calcular Flete
+                        </button>
+                    </form>
+                </section>
             </div>
 
-            <div class="result-card">
-                <h2>Resumen de Cotización</h2>
-                
-                <div class="result-item">
-                    <span class="label">Ruta Estimada:</span>
-                    <span class="value" id="route-display">-</span>
-                </div>
-                <div class="result-item">
-                    <span class="label">Distancia Total:</span>
-                    <span class="value highlight" id="distance-display">0 km</span>
-                </div>
-                <div class="result-item">
-                    <span class="label">Peso Declarado:</span>
-                    <span class="value" id="weight-display">0 kg</span>
-                </div>
-                <div class="result-item">
-                    <span class="label">Tarifa Aplicada por Km:</span>
-                    <span class="value" id="rate-display">$0</span>
-                </div>
-                
-                <div class="divider"></div>
-                
-                <div class="result-item total">
-                    <span class="label">Costo Total:</span>
-                    <span class="value" id="total-cost">$0.00</span>
+            <!-- Columna 2: Resultados y Tarifario -->
+            <div class="dashboard-col col-results-tariff">
+                <!-- Esta sección comienza oculta (display: none) y JavaScript la mostrará luego -->
+                <section class="result-section" id="result-section" style="display: none; margin-top: 0;">
+                    <div class="result-card">
+                        <h2>Resumen de Cotización</h2>
+                        
+                        <div class="result-item">
+                            <span class="label">Cotizado por:</span>
+                            <span class="value" id="username-display">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Tienda:</span>
+                            <span class="value" id="store-display">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Ruta Estimada:</span>
+                            <span class="value" id="route-display">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Distancia Total:</span>
+                            <span class="value highlight" id="distance-display">0 km</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="label">Peso Declarado:</span>
+                            <span class="value" id="weight-display">0 kg</span>
+                        </div>
+                        <div class="result-item print-hide-item">
+                            <span class="label">Tarifa Aplicada por Km:</span>
+                            <span class="value" id="rate-display">$0</span>
+                        </div>
+                        
+                        <div class="divider"></div>
+                        
+                        <div class="result-item total">
+                            <span class="label">Costo Total:</span>
+                            <span class="value" id="total-cost">$0.00</span>
+                        </div>
+
+                        <!-- Firma y Fecha para Impresión -->
+                        <div class="print-only-signature" style="display: none; margin-top: 50px; justify-content: space-between; align-items: flex-end; width: 100%;">
+                            <div>
+                                <p style="font-size: 13px; color: #555; margin-bottom: 5px;">Fecha de Cotización: <span id="print-date"></span></p>
+                                <p style="font-size: 11px; color: #777;">* Esta cotización tiene una validez de 7 días hábiles.</p>
+                            </div>
+                            <div style="text-align: center; border-top: 1px solid #777; width: 220px; padding-top: 8px;">
+                                <p style="font-size: 13px; color: #333; font-weight: bold;">Firma Autorizada</p>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div style="display: flex; gap: 10px; margin-top: 25px; flex-wrap: wrap;">
+                            <button type="button" id="print-btn" class="btn-primary" style="flex: 1; min-width: 140px; background-color: var(--highlight); display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px;">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                Imprimir
+                            </button>
+                            <button type="button" id="gmaps-btn" class="btn-primary" style="flex: 1; min-width: 140px; background-color: #4285F4; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px;">
+                                🗺️ Abrir en GMaps
+                            </button>
+                            <button type="button" id="toggle-map-btn" class="btn-primary" style="flex: 1; min-width: 140px; background-color: #475569; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px;">
+                                👁️ Esconder Mapa
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tabla de Tarifario -->
+                <section class="tariff-section">
+                    <div class="tariff-card">
+                        <div class="tariff-header" id="tariff-toggle-btn">
+                            <h2>📋 Tarifario de Fletes</h2>
+                            <span class="tariff-arrow" id="tariff-arrow">▼</span>
+                        </div>
+                        <p class="tariff-subtitle">Tabla de precios por kilómetro según peso de carga</p>
+                        <div class="tariff-table-wrapper" id="tariff-table-wrapper">
+                            <table class="tariff-table" id="tariff-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rango de Peso</th>
+                                        <th>Costo por Km</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tariff-body">
+                                    <!-- Se poblará de forma dinámica -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Columna 3: Mapa Interactivo -->
+            <div class="dashboard-col col-map">
+                <div id="map-container" style="position: relative; height: 100%; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); width: 100%;">
+                    <button id="fullscreen-btn" type="button" style="position: absolute; bottom: 10px; right: 10px; z-index: 1000; background: var(--accent-color); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.2s;">🔍 Pantalla Completa</button>
+                    <button id="close-fullscreen-btn" type="button" style="display: none; position: absolute; top: 15px; left: 50%; transform: translateX(-50%); z-index: 999999; background: #ef4444; color: white; border: 2px solid white; padding: 15px 30px; border-radius: 12px; cursor: pointer; font-size: 16px; font-weight: bold; box-shadow: 0 8px 15px rgba(0,0,0,0.6);">❌ CERRAR MAPA EXPANDIDO</button>
+                    <div id="map" style="height: 100%; width: 100%;"></div>
                 </div>
             </div>
-        </section>
+        </div>
     </main>
     
     <!-- Enlazamos nuestro archivo de lógica -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="app.js"></script>
+    <script>
+        // Failsafe: Asegurar que las funciones de UI se inicialicen siempre
+        (function() {
+            // Toggle manual km - click en toda el área del toggle
+            var toggle = document.getElementById('manual-km-toggle');
+            var box = document.getElementById('manual-km-box');
+            var toggleArea = document.getElementById('manual-km-toggle-area');
+
+            function actualizarManualBox() {
+                if (toggle && box) {
+                    box.style.display = toggle.checked ? 'block' : 'none';
+                }
+            }
+
+            if (toggle) {
+                toggle.addEventListener('change', actualizarManualBox);
+            }
+
+            // Hacer que todo el área del toggle sea clickeable
+            if (toggleArea && toggle) {
+                toggleArea.style.cursor = 'pointer';
+                toggleArea.addEventListener('click', function(e) {
+                    // Solo toglear si no clickearon directamente en el checkbox
+                    if (e.target !== toggle) {
+                        toggle.checked = !toggle.checked;
+                        actualizarManualBox();
+                    }
+                });
+            }
+
+            // Toggle tariff table collapse
+            var tariffBtn = document.getElementById('tariff-toggle-btn');
+            var tariffWrapper = document.getElementById('tariff-table-wrapper');
+            var tariffArrow = document.getElementById('tariff-arrow');
+            if (tariffBtn && tariffWrapper) {
+                tariffBtn.style.cursor = 'pointer';
+                tariffBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    tariffWrapper.classList.toggle('collapsed');
+                    if (tariffArrow) tariffArrow.classList.toggle('collapsed');
+                });
+            }
+
+            // Manual GMaps button
+            var manualGmapsBtn = document.getElementById('manual-gmaps-btn');
+            if (manualGmapsBtn && typeof manejarAbrirGmaps === 'function') {
+                manualGmapsBtn.addEventListener('click', manejarAbrirGmaps);
+            }
+        })();
+    </script>
 </body>
 </html>

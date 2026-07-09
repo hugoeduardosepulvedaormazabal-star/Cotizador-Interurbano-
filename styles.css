@@ -21,10 +21,13 @@ body {
     background-color: var(--bg-color);
     color: var(--text-primary);
     min-height: 100vh;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: 0;
+    margin: 0;
+    overflow: hidden; /* Evita scroll en la ventana global del dashboard */
     /* Un fondo Premium degradado a la medida */
     background-image: radial-gradient(circle at top right, #1e293b 0%, transparent 40%),
                       radial-gradient(circle at bottom left, #1e1b4b 0%, transparent 40%);
@@ -37,13 +40,18 @@ body {
     -webkit-backdrop-filter: blur(16px); 
     border: 1px solid var(--border-color);
     border-radius: 24px;
-    padding: 40px;
-    width: 100%;
-    max-width: 500px;
+    padding: 30px;
+    width: 98vw;
+    height: 96vh;
+    max-width: 1720px;
+    max-height: 980px;
     /* Sombra elegante */
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     /* Animación de entrada al abrir la página */
     animation: fadeIn 0.6s ease-out;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 @keyframes fadeIn {
@@ -63,7 +71,7 @@ body {
 }
 
 .app-header h1 span {
-    color: var(--accent-color);
+    color: #ef4444; /* Rojo Limatco corporativo solicitado */
 }
 
 .app-header p {
@@ -221,4 +229,797 @@ body {
 
 #fullscreen-btn:hover {
     transform: scale(1.05); /* Efecto botoncito */
+}
+
+/* ==========================================================
+   NUEVO: Diseño en dos columnas para el mapa a un lado
+   ========================================================== */
+/* ==========================================================
+   NUEVO: Grid para Dashboard de 3 columnas
+   ========================================================== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 420px 380px 1fr;
+    gap: 24px;
+    flex: 1;
+    min-height: 0; /* Permite scrollbar interno en flex containers */
+}
+
+/* Columna base del dashboard */
+.dashboard-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    height: 100%;
+    min-height: 0; /* Importante para flex scrollbar */
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+/* Scrollbars estilizados e independientes por columna */
+.dashboard-col::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dashboard-col::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dashboard-col::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+}
+
+.dashboard-col::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+/* Configuraciones específicas de las columnas */
+.col-form {
+    /* Formulario no requiere scroll horizontal */
+    overflow-x: hidden;
+}
+
+.col-results-tariff {
+    overflow-x: hidden;
+}
+
+.col-map {
+    overflow: hidden; /* El mapa no tiene scrollbar, se maneja interactivo */
+    padding-right: 0;
+}
+
+#map-container {
+    position: relative;
+    height: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+/* Ajustes adaptables del grid cuando se esconde el mapa usando :has */
+.dashboard-grid:has(#map-container[style*="display: none"]) {
+    grid-template-columns: 420px 1fr;
+}
+
+/* Media Queries para pantallas medianas o más chicas (Fallback responsivo) */
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .col-map {
+        grid-column: span 2;
+        height: 400px;
+    }
+    .dashboard-grid:has(#map-container[style*="display: none"]) {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        overflow: auto;
+        height: auto;
+    }
+    .app-container {
+        height: auto;
+        max-height: none;
+        width: 100%;
+        padding: 20px;
+    }
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    .col-map {
+        grid-column: span 1;
+        height: 350px;
+    }
+}
+
+/* ==========================================================
+   MANUAL KM OVERRIDE TOGGLE & INPUT
+   ========================================================== */
+
+.manual-km-group {
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.3);
+    transition: all 0.3s ease;
+}
+
+.manual-km-group:has(#manual-km-toggle:checked) {
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.manual-km-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toggle-label {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--text-secondary) !important;
+    cursor: pointer;
+    margin-bottom: 0 !important;
+    user-select: none;
+}
+
+/* Custom Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    transition: all 0.3s ease;
+}
+
+.toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text-secondary);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #3b82f6;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+    background-color: white;
+}
+
+/* Manual KM Input Box */
+.manual-km-input-box {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    animation: slideDown 0.3s ease-out;
+}
+
+.manual-km-hint {
+    font-size: 12px;
+    color: #fda4af;
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.manual-km-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.manual-km-row input {
+    flex: 1;
+    background-color: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(59, 130, 246, 0.4) !important;
+    color: var(--text-primary);
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.manual-km-row input:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    background-color: rgba(15, 23, 42, 0.9);
+}
+
+.manual-km-unit {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 30px;
+}
+
+.btn-secondary {
+    width: 100%;
+    background-color: rgba(66, 133, 244, 0.15);
+    color: #93bbfc;
+    border: 1px solid rgba(66, 133, 244, 0.3);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(66, 133, 244, 0.25);
+    border-color: rgba(66, 133, 244, 0.5);
+}
+
+/* ==========================================================
+   TARIFF TABLE
+   ========================================================== */
+
+.tariff-section {
+    margin-bottom: 20px;
+}
+
+.tariff-card {
+    background-color: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px 24px;
+    transition: all 0.3s ease;
+}
+
+.tariff-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.tariff-header h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.tariff-arrow {
+    font-size: 14px;
+    color: var(--text-secondary);
+    transition: transform 0.3s ease;
+}
+
+.tariff-arrow.collapsed {
+    transform: rotate(-90deg);
+}
+
+.tariff-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    margin-bottom: 16px;
+}
+
+.tariff-table-wrapper {
+    max-height: 500px;
+    overflow-y: auto;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+
+.tariff-table-wrapper.collapsed {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.tariff-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.tariff-table thead th {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: var(--accent-color);
+    font-weight: 700;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.tariff-table thead th:first-child {
+    border-radius: 8px 0 0 0;
+}
+
+.tariff-table thead th:last-child {
+    border-radius: 0 8px 0 0;
+    text-align: right;
+}
+
+.tariff-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    transition: all 0.2s ease;
+}
+
+.tariff-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.tariff-table tbody tr.active-row {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    border-left: 3px solid var(--highlight);
+}
+
+.tariff-table tbody tr.active-row td {
+    color: var(--highlight);
+    font-weight: 700;
+}
+
+.tariff-table tbody td {
+    padding: 10px 14px;
+    color: var(--text-primary);
+}
+
+.tariff-table tbody td:last-child {
+    text-align: right;
+    font-weight: 600;
+    font-family: 'Inter', monospace;
+}
+
+.tariff-table tbody tr:last-child td:first-child {
+    border-radius: 0 0 0 8px;
+}
+
+.tariff-table tbody tr:last-child td:last-child {
+    border-radius: 0 0 8px 0;
+}
+
+/* Scrollbar for tariff table */
+.tariff-table-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tariff-table-wrapper::-webkit-scrollbar-track {
+animation: slideDown 0.3s ease-out;
+}
+
+.manual-km-hint {
+    font-size: 12px;
+    color: #fda4af;
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+
+.manual-km-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.manual-km-row input {
+    flex: 1;
+    background-color: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(59, 130, 246, 0.4) !important;
+    color: var(--text-primary);
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.manual-km-row input:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    background-color: rgba(15, 23, 42, 0.9);
+}
+
+.manual-km-unit {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 30px;
+}
+
+.btn-secondary {
+    width: 100%;
+    background-color: rgba(66, 133, 244, 0.15);
+    color: #93bbfc;
+    border: 1px solid rgba(66, 133, 244, 0.3);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(66, 133, 244, 0.25);
+    border-color: rgba(66, 133, 244, 0.5);
+}
+
+/* ==========================================================
+   TARIFF TABLE
+   ========================================================== */
+
+.tariff-section {
+    margin-bottom: 20px;
+}
+
+.tariff-card {
+    background-color: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px 24px;
+    transition: all 0.3s ease;
+}
+
+.tariff-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.tariff-header h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.tariff-arrow {
+    font-size: 14px;
+    color: var(--text-secondary);
+    transition: transform 0.3s ease;
+}
+
+.tariff-arrow.collapsed {
+    transform: rotate(-90deg);
+}
+
+.tariff-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    margin-bottom: 16px;
+}
+
+.tariff-table-wrapper {
+    max-height: 500px;
+    overflow-y: auto;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+
+.tariff-table-wrapper.collapsed {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.tariff-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.tariff-table thead th {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: var(--accent-color);
+    font-weight: 700;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.tariff-table thead th:first-child {
+    border-radius: 8px 0 0 0;
+}
+
+.tariff-table thead th:last-child {
+    border-radius: 0 8px 0 0;
+    text-align: right;
+}
+
+.tariff-table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    transition: all 0.2s ease;
+}
+
+.tariff-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.tariff-table tbody tr.active-row {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    border-left: 3px solid var(--highlight);
+}
+
+.tariff-table tbody tr.active-row td {
+    color: var(--highlight);
+    font-weight: 700;
+}
+
+.tariff-table tbody td {
+    padding: 10px 14px;
+    color: var(--text-primary);
+}
+
+.tariff-table tbody td:last-child {
+    text-align: right;
+    font-weight: 600;
+    font-family: 'Inter', monospace;
+}
+
+.tariff-table tbody tr:last-child td:first-child {
+    border-radius: 0 0 0 8px;
+}
+
+.tariff-table tbody tr:last-child td:last-child {
+    border-radius: 0 0 8px 0;
+}
+
+/* Scrollbar for tariff table */
+.tariff-table-wrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tariff-table-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.tariff-table-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+/* ESTILOS PARA IMPRESIÓN */
+@media print {
+    @page {
+        margin: 1.2cm; /* Márgenes optimizados para maximizar área de impresión */
+        size: portrait;
+    }
+    
+    html, body {
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        color: black !important;
+        overflow: visible !important;
+        font-size: 20px; /* Aumentamos fuente base en impresión */
+    }
+    
+    .app-container {
+        box-shadow: none !important;
+        border: none !important;
+        background: none !important;
+        backdrop-filter: none !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        min-height: 80vh !important; /* Centrado vertical del contenido en la hoja */
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+    }
+    
+    .app-header {
+        text-align: center !important;
+        margin-top: 10px !important;
+        margin-bottom: 40px !important;
+        border-bottom: 3px solid #000 !important;
+        padding-bottom: 25px !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: 780px !important; /* Aumentado para coincidir con la boleta */
+    }
+    
+    .app-header h1 {
+        font-size: 42px !important; /* Título de Limatco muy grande y legible */
+        color: black !important;
+        line-height: 1.3 !important;
+        margin: 0 !important;
+    }
+    
+    .app-header h1 span {
+        color: #ef4444 !important;
+    }
+    
+    /* Esconder columnas innecesarias para que no interfieran en el centrado */
+    .col-form,
+    .col-map,
+    #map-container,
+    .tariff-section,
+    #print-btn, 
+    #gmaps-btn,
+    #emergency-gmaps-btn,
+    #emergency-box, 
+    #toggle-map-btn,
+    #fullscreen-btn,
+    .print-hide-item,
+    .app-header p {
+        display: none !important;
+    }
+    
+    /* Desactivar la grilla de columnas para permitir centrado libre */
+    .dashboard-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .col-results-tariff {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    .result-section {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    .result-card {
+        border: 4px solid #000 !important; /* Borde negro sólido grueso de alta visibilidad */
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+        padding: 55px 70px !important; /* Espaciado interno amplio y elegante */
+        border-radius: 24px !important;
+        width: 100% !important;
+        max-width: 780px !important; /* Ampliado de 580px a 780px para ocupar más hoja a lo ancho */
+        margin: 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        box-sizing: border-box !important;
+    }
+    
+    .result-card h2 {
+        font-size: 38px !important; /* Título interno "RESUMEN DE COTIZACIÓN" muy grande */
+        font-weight: 800 !important;
+        color: black !important;
+        margin-top: 0 !important;
+        margin-bottom: 35px !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-align: center !important;
+    }
+    
+    .result-item {
+        font-size: 26px !important; /* Letras de datos de cotización muy grandes (para personas con mala vista) */
+        margin-top: 20px !important;
+        margin-bottom: 20px !important;
+        line-height: 1.4 !important;
+    }
+    
+    .result-item .label {
+        color: #000 !important;
+        font-weight: 700 !important;
+    }
+    
+    .result-item .value {
+        color: black !important;
+        font-weight: 700 !important;
+        font-size: 26px !important;
+        max-width: 100% !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+    }
+    
+    .result-item .highlight {
+        color: black !important;
+        border-bottom: 3px solid #000;
+    }
+    
+    .divider {
+        height: 3px !important;
+        background-color: #000 !important;
+        margin: 35px 0 !important;
+        border: none !important;
+    }
+    
+    .result-item.total {
+        font-size: 32px !important;
+        margin-top: 35px !important;
+        padding-top: 25px !important;
+        border-top: 3px dashed #000 !important;
+    }
+    
+    .result-item.total .label {
+        color: black !important;
+        font-weight: 800 !important;
+    }
+    
+    .result-item.total .value {
+        color: black !important;
+        font-size: 56px !important; /* Importe del Costo Total extremadamente grande y nítido */
+        font-weight: 900 !important;
+    }
+    
+    .print-only-signature {
+        display: flex !important;
+        margin-top: 60px !important; /* Espaciado cómodo */
+        padding-top: 25px !important;
+        border-top: 1px solid #000 !important;
+    }
+    
+    .print-only-signature p {
+        font-size: 18px !important; /* Textos de firmas más grandes */
+    }
 }
