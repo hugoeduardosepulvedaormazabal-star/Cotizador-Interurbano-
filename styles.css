@@ -829,7 +829,7 @@ animation: slideDown 0.3s ease-out;
 /* ESTILOS PARA IMPRESIÓN */
 @media print {
     @page {
-        margin: 1.2cm; /* Márgenes optimizados para maximizar área de impresión */
+        margin: 1cm; /* Márgenes optimizados para maximizar área de impresión */
         size: portrait;
     }
     
@@ -840,7 +840,7 @@ animation: slideDown 0.3s ease-out;
         background: white !important;
         color: black !important;
         overflow: visible !important;
-        font-size: 20px; /* Aumentamos fuente base en impresión */
+        font-size: 13px; /* Escala base adecuada para impresión */
     }
     
     .app-container {
@@ -852,29 +852,29 @@ animation: slideDown 0.3s ease-out;
         padding: 0 !important;
         margin: 0 !important;
         height: auto !important;
-        min-height: 80vh !important; /* Centrado vertical del contenido en la hoja */
+        min-height: auto !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: center !important;
+        justify-content: flex-start !important;
         align-items: center !important;
         box-sizing: border-box !important;
     }
     
     .app-header {
         text-align: center !important;
-        margin-top: 10px !important;
-        margin-bottom: 40px !important;
-        border-bottom: 3px solid #000 !important;
-        padding-bottom: 25px !important;
+        margin-top: 0px !important;
+        margin-bottom: 20px !important;
+        border-bottom: 2px solid #000 !important;
+        padding-bottom: 10px !important;
         display: block !important;
         width: 100% !important;
-        max-width: 780px !important; /* Aumentado para coincidir con la boleta */
+        max-width: 680px !important;
     }
     
     .app-header h1 {
-        font-size: 42px !important; /* Título de Limatco muy grande y legible */
+        font-size: 26px !important; /* Título elegante y de tamaño óptimo */
         color: black !important;
-        line-height: 1.3 !important;
+        line-height: 1.2 !important;
         margin: 0 !important;
     }
     
@@ -902,7 +902,7 @@ animation: slideDown 0.3s ease-out;
     .dashboard-grid {
         display: flex !important;
         flex-direction: column !important;
-        justify-content: center !important;
+        justify-content: flex-start !important;
         align-items: center !important;
         width: 100% !important;
         height: auto !important;
@@ -913,7 +913,7 @@ animation: slideDown 0.3s ease-out;
     .col-results-tariff {
         display: flex !important;
         flex-direction: column !important;
-        justify-content: center !important;
+        justify-content: flex-start !important;
         align-items: center !important;
         width: 100% !important;
         height: auto !important;
@@ -935,36 +935,37 @@ animation: slideDown 0.3s ease-out;
     }
     
     .result-card {
-        border: 4px solid #000 !important; /* Borde negro sólido grueso de alta visibilidad */
+        border: 2px solid #000 !important; /* Borde negro elegante y limpio */
         background: white !important;
         color: black !important;
         box-shadow: none !important;
-        padding: 55px 70px !important; /* Espaciado interno amplio y elegante */
-        border-radius: 24px !important;
+        padding: 25px 40px !important; /* Espaciado cómodo y optimizado */
+        border-radius: 12px !important;
         width: 100% !important;
-        max-width: 780px !important; /* Ampliado de 580px a 780px para ocupar más hoja a lo ancho */
+        max-width: 680px !important; /* Ancho optimizado para encajar perfectamente */
         margin: 0 auto !important;
         display: flex !important;
         flex-direction: column !important;
         box-sizing: border-box !important;
+        page-break-inside: avoid !important; /* Prevenir división del card */
     }
     
     .result-card h2 {
-        font-size: 38px !important; /* Título interno "RESUMEN DE COTIZACIÓN" muy grande */
+        font-size: 20px !important; /* Título interno claro */
         font-weight: 800 !important;
         color: black !important;
         margin-top: 0 !important;
-        margin-bottom: 35px !important;
+        margin-bottom: 15px !important;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
         text-align: center !important;
     }
     
     .result-item {
-        font-size: 26px !important; /* Letras de datos de cotización muy grandes (para personas con mala vista) */
-        margin-top: 20px !important;
-        margin-bottom: 20px !important;
-        line-height: 1.4 !important;
+        font-size: 14px !important; /* Tamaño legible en papel (14px) */
+        margin-top: 8px !important;
+        margin-bottom: 8px !important;
+        line-height: 1.3 !important;
     }
     
     .result-item .label {
@@ -975,7 +976,7 @@ animation: slideDown 0.3s ease-out;
     .result-item .value {
         color: black !important;
         font-weight: 700 !important;
-        font-size: 26px !important;
+        font-size: 14px !important;
         max-width: 100% !important;
         white-space: normal !important;
         overflow: visible !important;
@@ -984,21 +985,21 @@ animation: slideDown 0.3s ease-out;
     
     .result-item .highlight {
         color: black !important;
-        border-bottom: 3px solid #000;
+        border-bottom: 2px solid #000;
     }
     
     .divider {
-        height: 3px !important;
+        height: 2px !important;
         background-color: #000 !important;
-        margin: 35px 0 !important;
+        margin: 15px 0 !important;
         border: none !important;
     }
     
     .result-item.total {
-        font-size: 32px !important;
-        margin-top: 35px !important;
-        padding-top: 25px !important;
-        border-top: 3px dashed #000 !important;
+        font-size: 18px !important;
+        margin-top: 15px !important;
+        padding-top: 15px !important;
+        border-top: 2px dashed #000 !important;
     }
     
     .result-item.total .label {
@@ -1008,18 +1009,18 @@ animation: slideDown 0.3s ease-out;
     
     .result-item.total .value {
         color: black !important;
-        font-size: 56px !important; /* Importe del Costo Total extremadamente grande y nítido */
+        font-size: 32px !important; /* Costo total destacado sin exagerar */
         font-weight: 900 !important;
     }
     
     .print-only-signature {
         display: flex !important;
-        margin-top: 60px !important; /* Espaciado cómodo */
-        padding-top: 25px !important;
+        margin-top: 35px !important; /* Espaciado cómodo */
+        padding-top: 15px !important;
         border-top: 1px solid #000 !important;
     }
     
     .print-only-signature p {
-        font-size: 18px !important; /* Textos de firmas más grandes */
+        font-size: 11px !important; /* Textos de firmas pequeños y profesionales */
     }
 }
