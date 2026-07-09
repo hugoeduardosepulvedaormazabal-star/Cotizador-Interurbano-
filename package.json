@@ -1,0 +1,12 @@
+{
+  "name": "cotizador-interurbano",
+  "version": "1.0.0",
+  "description": "Calculadora y cotizador de fletes interurbanos",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
